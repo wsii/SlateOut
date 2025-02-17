@@ -27,6 +27,7 @@ public class SlateOut : ModuleRules
 			{
 				"Core",
 				// ... add other public dependencies that you statically link with here ...
+				"ApplicationCore"
 			}
 			);
 			
@@ -45,7 +46,8 @@ public class SlateOut : ModuleRules
 				"SlateCore",
 				"SourceCodeAccess",
 				"WorkspaceMenuStructure",
-				"AppFramework"
+				"AppFramework",
+				"ApplicationCore"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

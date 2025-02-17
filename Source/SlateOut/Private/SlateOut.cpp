@@ -4,6 +4,7 @@
 #include "SlateOutStyle.h"
 #include "Widgets/Docking/SDockTab.h"
 #include "ToolMenus.h"
+#include "ClassBrowser/ClassBrowserTab.h"
 #include "IconBrowser/IconBrowserTab.h"
 #include "IconBrowser/SlateIconBrowser.h"
 #include "Widgets/Testing/SPerfSuite.h"
@@ -13,6 +14,12 @@
 struct FToolMenuSection;
 class UToolMenu;
 static const FName SlateOutTabName("SlateOut");
+static const FName SlateIconBrowserTTabName("SlateIconBrowserTab");
+static const FName IconBrowserTabName("IconBrowserTab");
+static const FName ClassBrowserTabName("ClassBrowser");
+
+
+
 
 #define LOCTEXT_NAMESPACE "FSlateOutModule"
 
@@ -37,6 +44,19 @@ void FSlateOutModule::StartupModule()
 	}
 
 	IconBrowser = MakeShareable(new FSlateIconBrowser());
+
+	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(SlateIconBrowserTTabName, FOnSpawnTab::CreateRaw(this,&FSlateOutModule::OpenSlateIconBrowser))
+	.SetDisplayName(FText::FromName(TEXT("Slate图标")))
+	.SetMenuType(ETabSpawnerMenuType::Hidden);
+
+	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(IconBrowserTabName, FOnSpawnTab::CreateRaw(this,&FSlateOutModule::OpenIconBrowser))
+	.SetDisplayName(FText::FromName(TEXT("Slate图标")))
+	.SetMenuType(ETabSpawnerMenuType::Hidden);
+
+	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(ClassBrowserTabName, FOnSpawnTab::CreateRaw(this,&FSlateOutModule::OpenClassBrowser))
+	.SetDisplayName(FText::FromName(TEXT("ClassBrowser")))
+	.SetMenuType(ETabSpawnerMenuType::Hidden);
+	
 }
 
 void FSlateOutModule::ShutdownModule()
@@ -76,24 +96,51 @@ static void ShowTestSuite()
 	
 }
 
-void FSlateOutModule::ShowSlateIconBrowser() const
-{
 
-	FGlobalTabmanager::Get()->RegisterNomadTabSpawner("SlateIconBrowserTab", FOnSpawnTab::CreateRaw(this,&FSlateOutModule::CreateSlateIconBrowser))
-	.SetDisplayName(FText::FromName(TEXT("Slate图标")))
-	.SetMenuType(ETabSpawnerMenuType::Hidden);
-	
-}
-
-TSharedRef<SDockTab> FSlateOutModule::CreateSlateIconBrowser(const FSpawnTabArgs& Args) const
+TSharedRef<SDockTab> FSlateOutModule::OpenSlateIconBrowser(const FSpawnTabArgs& Args) const
 {
 	UE_LOG(LogTemp,Log,TEXT("Test"));
+	// return SNew(SDockTab)
+	// 		.TabRole(ETabRole::NomadTab)
+	// 		[
+	// 			SNew(SIconBrowserTab)
+	// 		];
+	FSlateIconBrowser* IconBrowserInstance = new FSlateIconBrowser();
+	return IconBrowserInstance->OnSpawnPluginTab();
+}
+
+TSharedRef<SDockTab> FSlateOutModule::OpenIconBrowser(const FSpawnTabArgs& Args) const
+{
 	return SNew(SDockTab)
-			.TabRole(ETabRole::NomadTab)
-			[
-				SNew(SIconBrowserTab)
-			];
-	
+		.TabRole(ETabRole::NomadTab)
+		[
+			SNew(SIconBrowserTab)
+			
+		];
+}
+
+TSharedRef<SDockTab> FSlateOutModule::OpenClassBrowser(const FSpawnTabArgs& Args) const
+{
+	return SNew(SDockTab)
+		.TabRole(ETabRole::NomadTab)
+		[
+			SNew(SClassBrowserTab)
+		];
+}
+
+void FSlateOutModule::OnSlateIconBrowserClicked() const
+{
+	FGlobalTabmanager::Get()->TryInvokeTab(SlateIconBrowserTTabName);
+}
+
+void FSlateOutModule::OnIconBrowserClicked() const
+{
+	FGlobalTabmanager::Get()->TryInvokeTab(IconBrowserTabName);
+}
+
+void FSlateOutModule::OnClassBrowser() const
+{
+	FGlobalTabmanager::Get()->TryInvokeTab(ClassBrowserTabName);
 }
 
 
@@ -146,42 +193,46 @@ TSharedRef<SWidget> FSlateOutModule::GetSlateOutsDropdown() const
 		)
 	);
 
-	// // Add a button to set the current level as the project's default map
+	MenuBuilder.AddMenuSeparator();
+	// Add a button to set the current level as the game default map
 	MenuBuilder.AddMenuEntry(
-		LOCTEXT("SlateIconBrowserTab", "图标面板"),
-		LOCTEXT("SlateIconBrowserTabtip", "打开图标面板"),
-		FSlateIcon(FAppStyle::Get().GetStyleSetName(), TEXT("SlateOut.SlateOut")),
+		LOCTEXT("IconBrowserTab", "图标面板"),
+		LOCTEXT("IconBrowserTabTooltip", "打开图标面板"),
+		FSlateIcon(FSlateOutStyle::Get().GetStyleSetName(), TEXT("SlateOut.SlateOut")),
 		FUIAction(
-			FExecuteAction::CreateRaw(this,&FSlateOutModule::ShowSlateIconBrowser),
+			FExecuteAction::CreateRaw(this,&FSlateOutModule::OnSlateIconBrowserClicked),
 			FCanExecuteAction::CreateStatic(&HasNoPlayWorld),
 			FIsActionChecked(),
 			FIsActionButtonVisible::CreateStatic(&HasNoPlayWorld)
 		)
 	);
-	// // Add a button to set the current level as the game default map
-	// MenuBuilder.AddMenuEntry(
-	// 	LOCTEXT("SetAsGameDefaultMap", "Set as Game Default Map"),
-	// 	LOCTEXT("SetAsGameDefaultMapTooltip", "Set the current level as the game's default map."),
-	// 	FSlateIcon(FAppStyle::Get().GetStyleSetName(), TEXT("GraphEditor.PadEvent_16x")),
-	// 	FUIAction(
-	// 		FExecuteAction::CreateStatic(&SlateOutFunctionLibrary::SetAsProjectDefaultMap, EGameMapToSet::GameDefaultMap),
-	// 		FCanExecuteAction::CreateStatic(&SlateOutFunctionLibrary::HasNoPlayWorld),
-	// 		FIsActionChecked(),
-	// 		FIsActionButtonVisible::CreateStatic(&SlateOutFunctionLibrary::HasNoPlayWorld)
-	// 	)
-	// );
-	// // Add a button to set the current level as the transition map
-	// MenuBuilder.AddMenuEntry(
-	// 	LOCTEXT("SetAsTransitionMap", "Set as Transition Map"),
-	// 	LOCTEXT("SetAsTransitionMapTooltip", "Set the current level as the transition map."),
-	// 	FSlateIcon(FAppStyle::Get().GetStyleSetName(), TEXT("LevelEditor.OpenLevel")),
-	// 	FUIAction(
-	// 		FExecuteAction::CreateStatic(&SlateOutFunctionLibrary::SetAsProjectDefaultMap, EGameMapToSet::TransitionMap),
-	// 		FCanExecuteAction::CreateStatic(&SlateOutFunctionLibrary::HasNoPlayWorld),
-	// 		FIsActionChecked(),
-	// 		FIsActionButtonVisible::CreateStatic(&SlateOutFunctionLibrary::HasNoPlayWorld)
-	// 	)
-	// );
+	MenuBuilder.AddMenuSeparator();
+	// // Add a button to set the current level as the project's default map
+	MenuBuilder.AddMenuEntry(
+		LOCTEXT("SlateIconBrowserTab", "图标面板"),
+		LOCTEXT("SlateIconBrowserTabtip", "打开图标面板"),
+		FSlateIcon(FSlateOutStyle::Get().GetStyleSetName(), TEXT("SlateOut.SlateOut")),
+		FUIAction(
+			FExecuteAction::CreateRaw(this,&FSlateOutModule::OnIconBrowserClicked),
+			FCanExecuteAction::CreateStatic(&HasNoPlayWorld),
+			FIsActionChecked(),
+			FIsActionButtonVisible::CreateStatic(&HasNoPlayWorld)
+		)
+	);
+	MenuBuilder.AddMenuSeparator();
+	// Add a button to set the current level as the transition map
+	MenuBuilder.AddMenuEntry(
+		LOCTEXT("ClassBrowser", "Class类合集面板"),
+		LOCTEXT("ClassBrowsertip", "打开Class类合集面板"),
+		FSlateIcon(FSlateOutStyle::Get().GetStyleSetName(), TEXT("SlateOut.SlateOut")),
+		FUIAction(
+			FExecuteAction::CreateRaw(this,&FSlateOutModule::OnClassBrowser),
+			FCanExecuteAction::CreateStatic(&HasNoPlayWorld),
+			FIsActionChecked(),
+			FIsActionButtonVisible::CreateStatic(&HasNoPlayWorld)
+		)
+	);
+
 
 	return MenuBuilder.MakeWidget();
 }
@@ -189,7 +240,7 @@ TSharedRef<SWidget> FSlateOutModule::GetSlateOutsDropdown() const
 void FSlateOutModule::RegisterGameEditorMenus()
 {
 	UToolMenu* Menu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar.PlayToolBar");
-	FToolMenuSection& Section = Menu->AddSection("PluginTools", TAttribute<FText>(), FToolMenuInsert("LevelBookmarks", EToolMenuInsertType::Default));
+	FToolMenuSection& Section = Menu->AddSection("PluginTools", TAttribute<FText>(), FToolMenuInsert("SlateOutSection", EToolMenuInsertType::Default));
 
 	FToolMenuEntry SlateOutEntry = FToolMenuEntry::InitComboButton(
 		"SlateOut",

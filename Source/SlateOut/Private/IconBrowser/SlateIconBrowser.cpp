@@ -2,7 +2,6 @@
 
 #include "IconBrowser/SlateIconBrowser.h"
 
-#include "EditorStyleSet.h"
 #include "Framework/Application/MenuStack.h"
 #include "Framework/Application/SlateApplication.h"
 #include "HAL/PlatformApplicationMisc.h"

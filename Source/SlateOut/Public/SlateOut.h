@@ -27,6 +27,10 @@ public:
 	
 	//Slate Wideget
 	// TSharedPtr<SSlateIconBrowser> SlateIconBrowser;
+
+	void OnSlateIconBrowserClicked() const;
+	void OnIconBrowserClicked() const;
+	void OnClassBrowser() const;
 	
 private:
 	
@@ -41,8 +45,9 @@ private:
 	TSharedRef<SWidget> GetSlateOutsDropdown() const;
 	void RegisterGameEditorMenus();
 	
-	void ShowSlateIconBrowser() const;
-	TSharedRef<SDockTab> CreateSlateIconBrowser(const FSpawnTabArgs& Args) const;
+	TSharedRef<SDockTab> OpenSlateIconBrowser(const FSpawnTabArgs& Args) const;
+	TSharedRef<SDockTab> OpenIconBrowser(const FSpawnTabArgs& Args) const;
+	TSharedRef<SDockTab> OpenClassBrowser(const FSpawnTabArgs& Args) const;
 
 
 };
