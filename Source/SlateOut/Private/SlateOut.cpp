@@ -43,14 +43,12 @@ void FSlateOutModule::StartupModule()
 		}
 	}
 
-	IconBrowser = MakeShareable(new FSlateIconBrowser());
-
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(SlateIconBrowserTTabName, FOnSpawnTab::CreateRaw(this,&FSlateOutModule::OpenSlateIconBrowser))
 	.SetDisplayName(FText::FromName(TEXT("Slate图标")))
 	.SetMenuType(ETabSpawnerMenuType::Hidden);
 
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(IconBrowserTabName, FOnSpawnTab::CreateRaw(this,&FSlateOutModule::OpenIconBrowser))
-	.SetDisplayName(FText::FromName(TEXT("Slate图标")))
+	.SetDisplayName(FText::FromName(TEXT("Slate图标全")))
 	.SetMenuType(ETabSpawnerMenuType::Hidden);
 
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(ClassBrowserTabName, FOnSpawnTab::CreateRaw(this,&FSlateOutModule::OpenClassBrowser))
@@ -99,14 +97,14 @@ static void ShowTestSuite()
 
 TSharedRef<SDockTab> FSlateOutModule::OpenSlateIconBrowser(const FSpawnTabArgs& Args) const
 {
-	UE_LOG(LogTemp,Log,TEXT("Test"));
-	// return SNew(SDockTab)
-	// 		.TabRole(ETabRole::NomadTab)
-	// 		[
-	// 			SNew(SIconBrowserTab)
-	// 		];
-	FSlateIconBrowser* IconBrowserInstance = new FSlateIconBrowser();
-	return IconBrowserInstance->OnSpawnPluginTab();
+	// UE_LOG(LogTemp,Log,TEXT("Test"));
+
+	return SNew(SDockTab)
+		.TabRole(ETabRole::NomadTab)
+		[
+			SNew(SSlateIconBrowser)
+			
+		];
 }
 
 TSharedRef<SDockTab> FSlateOutModule::OpenIconBrowser(const FSpawnTabArgs& Args) const
@@ -209,7 +207,7 @@ TSharedRef<SWidget> FSlateOutModule::GetSlateOutsDropdown() const
 	MenuBuilder.AddMenuSeparator();
 	// // Add a button to set the current level as the project's default map
 	MenuBuilder.AddMenuEntry(
-		LOCTEXT("SlateIconBrowserTab", "图标面板"),
+		LOCTEXT("SlateIconBrowserTab", "所有图标面板"),
 		LOCTEXT("SlateIconBrowserTabtip", "打开图标面板"),
 		FSlateIcon(FSlateOutStyle::Get().GetStyleSetName(), TEXT("SlateOut.SlateOut")),
 		FUIAction(
@@ -232,8 +230,7 @@ TSharedRef<SWidget> FSlateOutModule::GetSlateOutsDropdown() const
 			FIsActionButtonVisible::CreateStatic(&HasNoPlayWorld)
 		)
 	);
-
-
+	
 	return MenuBuilder.MakeWidget();
 }
 

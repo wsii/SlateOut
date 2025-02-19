@@ -25,8 +25,11 @@ private:
 	using FClassNameList = TArray<TSharedPtr<FClassNameListItem>>;
 	enum class EClassRecordListAction;
 	TSharedRef<ITableRow> OnGenerateWidgetForClassNameListView(TSharedPtr<FClassNameListItem> InItem, const TSharedRef<STableViewBase>& OwnerTable);
+	//update cache
 	void UpdateClassNameList();
+	//update view
 	void UpdateClassNameListItems();
+	
 	void OnModuleChanged(FName ModuleThatChanged, EModuleChangeReason ReasonForChange);
 	void OnClickClassName(const TSharedRef<FClassNameListItem>& ItemRef, const EClassRecordListAction Action);
 	void OnClassNameFilterChanged(const FText& InFilterText);
@@ -35,7 +38,9 @@ private:
 	// class info view
 	using FClassInfoListItem = ClassBrowser_Detail::FClassItemBase;
 	TSharedRef<ITableRow> OnGenerateWidgetForClassInfoListView(TSharedPtr<FClassInfoListItem> InItem, const TSharedRef<STableViewBase>& OwnerTable);
+	//update cache
 	void UpdateClassInfoList();
+	//update view
 	void UpdateClassInfoListItems();
 	void OnClickClassInfoItem(const TSharedRef<FClassInfoListItem>& ItemRef) const;
 	FReply OnClickClassInfoButton() const;
@@ -58,7 +63,9 @@ private:
 
 	typedef SListView<TSharedPtr<FClassNameListItem>> SClassNameListView;
 	TSharedPtr<SClassNameListView>	ClassNameListView;
+	//temp
 	FClassNameList ClassNameListCache;
+	//bind to view
 	FClassNameList ClassNameListItems;
 	TSharedPtr<FActiveTimerHandle> ClassNameSearchTimer;
 
@@ -70,7 +77,9 @@ private:
 	
 	typedef SListView<TSharedPtr<FClassInfoListItem>> SClassInfoListView;
 	TSharedPtr<SClassInfoListView> ClassInfoListView;
+	//temp
 	TArray<TSharedPtr<FClassInfoListItem>> ClassInfoListCache;
+	//bind to view
 	TArray<TSharedPtr<FClassInfoListItem>> ClassInfoListItems;
 	TSharedPtr<FActiveTimerHandle> ClassInfoSearchTimer;
 

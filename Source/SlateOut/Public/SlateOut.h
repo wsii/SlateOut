@@ -35,8 +35,6 @@ public:
 private:
 	
 	FDelegateHandle ToolMenusHandle;
-
-	TSharedPtr<FSlateIconBrowser> IconBrowser;
 	
 	/**
 	 * @brief 创建下拉插件菜单内容
