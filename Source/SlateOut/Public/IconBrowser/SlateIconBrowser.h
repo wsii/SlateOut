@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Input/Reply.h"
+
 class FIconInfo;
 class SMultiLineEditableText;
 class FToolBarBuilder;
@@ -49,18 +50,17 @@ public:
 	TSharedRef<SWidget> MakeMainMenu();
 	FReply EntryContextMenu(const FGeometry& Geometry, const FPointerEvent& PointerEvent, FName Name);
 
-	//View
-	void UpdateStyleList();
-	//Data
-	void UpdateStyleListItems();
-
-	//View
-	void UpdateIconList();
+	
 	//Data
 	void UpdateIconListItems();
 	
-	void UpdateIconInfoListItems();
+	using FIconType = TSharedRef<FIconInfo>;
+	using FIconListType = TArray<FIconType>;
 	
+	// FReply OnClickIcon(TSharedPtr<FName> FName);
+	FReply OnClickIcon(const FGeometry&, const FPointerEvent&, TSharedPtr<FName>);
+
+	FReply OnResetIcon();
 	
 	void OnStyleNameFilterChanged(const FText& InFilterText);
 	TSharedPtr<FActiveTimerHandle> StyleNameSearchTimer;
@@ -68,7 +68,8 @@ public:
 	TSharedPtr<FActiveTimerHandle> IconSearchTimer;
 	
 // private:
-	FString FilterString;
+	FString StyleFilterString;
+	FString IconFilterString;
 	
 	FName SelectedStyle;
 	
@@ -88,7 +89,6 @@ public:
 	//IconList
 	TSharedPtr<SSearchBox>	IconSearchBox;
 	TSharedPtr<SBorder>		IconPanel;
-	const float						IconSearchDelay = 0.1f;
 	TSharedPtr<SListView<TSharedPtr<FName>>> IconListView;
 	//IconRow
 	TSharedRef<ITableRow> GenerateIconRow(TSharedPtr<FName> Name, const TSharedRef<STableViewBase>& TableViewBase);
@@ -96,10 +96,11 @@ public:
 	TArray<TSharedPtr<FName>> AllIconLines;
 	TSharedPtr<FName> IconItem;
 	//icon list cache
-	TArray<FString> Lines;
+	TArray<FString> LinesCache;
 	// TArray<TSharedPtr<FString>> Lines;
 	
 	//Icon info Panel
+	TSharedPtr<SBorder>		IconInfoPanel;
 	TSharedPtr<FIconInfo>			SelectedIcon;
 	TSharedPtr<SMultiLineEditableText>		SelectedIconName;
 	TSharedPtr<SMultiLineEditableText>		DetailText;

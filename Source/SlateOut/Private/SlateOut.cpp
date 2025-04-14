@@ -148,23 +148,6 @@ TSharedRef<SWidget> FSlateOutModule::GetSlateOutsDropdown() const
 
 	// Add a button
 	MenuBuilder.AddMenuEntry(
-	LOCTEXT("ShowPrefSuite", "列表"),
-LOCTEXT("ShowPrefSuiteTooltip", "打开列表面板"),
-
-		FSlateIcon(FSlateOutStyle::GetStyleSetName(), "SlateOut.SlateOut"),
-		FUIAction(
-			FExecuteAction::CreateStatic(&ShowStarshipSuite),
-			FCanExecuteAction::CreateStatic(&HasNoPlayWorld),
-			FIsActionChecked(),
-			FIsActionButtonVisible::CreateStatic(&HasNoPlayWorld)
-		)
-	);
-	
-	// Add a line separator
-	MenuBuilder.AddMenuSeparator();
-
-	// Add a button
-	MenuBuilder.AddMenuEntry(
 	LOCTEXT("ShowStarshipSuite", "组件"),
 LOCTEXT("ShowStarshipSuiteTooltip", "打开组件面板"),
 		FSlateIcon(FSlateOutStyle::GetStyleSetName(), "SlateOut.SlateOut"),
@@ -179,18 +162,36 @@ LOCTEXT("ShowStarshipSuiteTooltip", "打开组件面板"),
 	// Add a line separator
 	MenuBuilder.AddMenuSeparator();
 
-	// Add a button 
+	// Add a button
 	MenuBuilder.AddMenuEntry(
-		LOCTEXT("ShowTestSuite", "测试集合"),
-		LOCTEXT("ShowTestSuiteTooltip", "打开测试集合面板"),
+	LOCTEXT("ShowPrefSuite", "列表"),
+LOCTEXT("ShowPrefSuiteTooltip", "打开列表面板"),
+
 		FSlateIcon(FSlateOutStyle::GetStyleSetName(), "SlateOut.SlateOut"),
 		FUIAction(
-			FExecuteAction::CreateStatic(&ShowTestSuite),
+			FExecuteAction::CreateStatic(&ShowStarshipSuite),
 			FCanExecuteAction::CreateStatic(&HasNoPlayWorld),
 			FIsActionChecked(),
 			FIsActionButtonVisible::CreateStatic(&HasNoPlayWorld)
 		)
 	);
+
+	// Add a line separator
+	MenuBuilder.AddMenuSeparator();
+
+
+	// Add a button 
+	// MenuBuilder.AddMenuEntry(
+	// 	LOCTEXT("ShowTestSuite", "列表测试集合"),
+	// 	LOCTEXT("ShowTestSuiteTooltip", "打开测试集合面板"),
+	// 	FSlateIcon(FSlateOutStyle::GetStyleSetName(), "SlateOut.SlateOut"),
+	// 	FUIAction(
+	// 		FExecuteAction::CreateStatic(&ShowTestSuite),
+	// 		FCanExecuteAction::CreateStatic(&HasNoPlayWorld),
+	// 		FIsActionChecked(),
+	// 		FIsActionButtonVisible::CreateStatic(&HasNoPlayWorld)
+	// 	)
+	// );
 
 	MenuBuilder.AddMenuSeparator();
 	// Add a button 

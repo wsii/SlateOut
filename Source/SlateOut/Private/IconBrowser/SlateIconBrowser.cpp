@@ -10,6 +10,7 @@
 #include "Widgets/Docking/SDockTab.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Framework/Notifications/NotificationManager.h"
+#include "IconBrowser/IconInfo.h"
 #include "Styling/SlateStyleRegistry.h"
 #include "Widgets/Input/SComboBox.h"
 #include "Widgets/Input/SEditableTextBox.h"
@@ -17,9 +18,14 @@
 #include "Widgets/Layout/SExpandableArea.h"
 #include "Widgets/Layout/SSeparator.h"
 #include "Widgets/Notifications/SNotificationList.h"
+#include "Widgets/Text/SMultiLineEditableText.h"
 #include "Widgets/Text/SRichTextBlock.h"
 
 #define LOCTEXT_NAMESPACE "SSlateIconBrowser"
+
+const static FString DefaultIconDetail("Click Icon to Select One");
+const static FText DefaultIconName = FText::FromString("No Icon is Selected");
+const static FSlateIcon DefaultIcon(FAppStyle::GetAppStyleSetName(), "Default");
 
 void SSlateIconBrowser::Construct(const FArguments& InArgs)
 {
@@ -45,7 +51,7 @@ void SSlateIconBrowser::Construct(const FArguments& InArgs)
 				SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot()
 				.FillWidth(0.3f)
-				.MaxWidth(400)
+				.MaxWidth(500)
 				[
 					SAssignNew(StylePanel, SBorder)
 				]
@@ -53,6 +59,11 @@ void SSlateIconBrowser::Construct(const FArguments& InArgs)
 				.FillWidth(1.0f)
 				[
 					SAssignNew(IconPanel, SBorder)
+				]
+				+ SHorizontalBox::Slot()
+				.FillWidth(1.0f)
+				[
+					SAssignNew(IconInfoPanel, SBorder)
 				]
 			]
 	];
@@ -82,84 +93,165 @@ void SSlateIconBrowser::Construct(const FArguments& InArgs)
 					.SelectionMode(ESelectionMode::Single)
 				]
 			]
-			+SVerticalBox::Slot()
-			.VAlign(EVerticalAlignment::VAlign_Center)
-			[
-				SNew(SBox)
-				.HAlign(EHorizontalAlignment::HAlign_Center)
-				.Visibility_Lambda([this]
-				{
-					return AllStyles.IsEmpty() ? EVisibility::Visible : EVisibility::Collapsed;
-				})
-				[
-					SNew(STextBlock)
-					.Text(LOCTEXT("NoResults", "No results found."))
-				]
-			]	
+			// +SVerticalBox::Slot()
+			// .FillHeight(1.0f)
+			// .VAlign(EVerticalAlignment::VAlign_Center)
+			// [
+			// 	SNew(SBox)
+			// 	.HAlign(EHorizontalAlignment::HAlign_Center)
+			// 	.Visibility_Lambda([this]
+			// 	{
+			// 		return AllStyles.IsEmpty() ? EVisibility::Visible : EVisibility::Collapsed;
+			// 	})
+			// 	[
+			// 		SNew(STextBlock)
+			// 		.Text(LOCTEXT("NoResults", "No results found."))
+			// 	]
+			// ]	
 		]
 	);
 
 	IconPanel->Construct(
-	SBorder::FArguments()
-	[
-		SNew(SVerticalBox)
-		+ SVerticalBox::Slot()
-		.FillHeight(1.0f)
+		SBorder::FArguments()
 		[
-			SNew(SHorizontalBox)
-			+ SHorizontalBox::Slot()
-			.MaxWidth(400)
-			.FillWidth(0.3)
+			SNew(SVerticalBox)
+			+ SVerticalBox::Slot()
+			.FillHeight(1.0f)
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				// .MaxWidth(400)
+				.FillWidth(0.3)
+				[
+					SNew(SBorder)
+					[
+						SNew(SVerticalBox)
+						+ SVerticalBox::Slot()
+						.FillHeight(0.1f)
+						.MaxHeight(40)
+						[
+							SNew(SBorder)
+							[
+								SAssignNew(IconSearchBox, SSearchBox)
+								.OnTextChanged(SharedThis(this), &SSlateIconBrowser::OnIconInfoFilterChanged)
+							]
+						]
+						+ SVerticalBox::Slot()
+						.FillHeight(1.0)
+						[
+
+							SAssignNew(IconListView, SListView<TSharedPtr<FName>>)
+							.ListItemsSource(&AllIconLines)
+							.OnGenerateRow_Raw(this, &SSlateIconBrowser::GenerateIconRow)
+							.SelectionMode(ESelectionMode::Single)
+							.Visibility_Lambda([this]
+							{
+								return LinesCache.IsEmpty() ? EVisibility::Collapsed : EVisibility::Visible;
+							})
+						]
+					]
+				]
+			]
+			+SVerticalBox::Slot()
+			.VAlign(EVerticalAlignment::VAlign_Center)
+			.AutoHeight()
 			[
 				SNew(SBorder)
+				.BorderImage(FAppStyle::Get().GetBrush("Brushes.Panel"))
+				.Padding(FMargin(10, 5))
 				[
+					SAssignNew(CopyNoteTextBlock, STextBlock)
+					.Text_Lambda([&]
+					{
+						return FText::Format(LOCTEXT("CopyNote", "Double click a line to copy the {0} C++ code."),
+							GetCodeStyleText(CopyCodeStyle));
+					})
+				]
+			]
+		]
+	);
+	IconInfoPanel->Construct(
+		SBorder::FArguments()
+		[
+			SNew(SVerticalBox)
+			+ SVerticalBox::Slot()
+			.FillHeight(1.0f)
+			[
+				
+				SNew(SBorder)
+				[
+
+					
 					SNew(SVerticalBox)
 					+ SVerticalBox::Slot()
-					.FillHeight(0.1f)
-					.MaxHeight(40)
 					[
-						SNew(SBorder)
+						SNew(SBox)
+						.VAlign(VAlign_Center)
+						.HAlign(HAlign_Center)
+						.HeightOverride(72)
+					]
+					+ SVerticalBox::Slot()
+					.AutoHeight()
+					[
+						SNew(SBox)
+						.VAlign(VAlign_Center)
+						.HAlign(HAlign_Center)
+						.HeightOverride(72)
 						[
-							SAssignNew(IconSearchBox, SSearchBox)
-							.OnTextChanged(SharedThis(this), &SSlateIconBrowser::OnIconInfoFilterChanged)
+							SNew(SBorder)
+							[
+								SAssignNew(DetailIcon, SImage)
+								.DesiredSizeOverride(FVector2d(64, 64))
+								.Image(DefaultIcon.GetIcon())
+							]
 						]
 					]
 					+ SVerticalBox::Slot()
-					.FillHeight(1.0)
+					.AutoHeight()
 					[
+						SNew(SBox)
+						.HeightOverride(32)
+						[
+							SAssignNew(SelectedIconName, SMultiLineEditableText)
+							.AutoWrapText(true)
+							.AllowMultiLine(true)
+							.IsReadOnly(true)
+							.WrappingPolicy(ETextWrappingPolicy::AllowPerCharacterWrapping)
+							.Text(DefaultIconName)
+						]
 
-						SAssignNew(IconListView, SListView<TSharedPtr<FName>>)
-						.ListItemsSource(&AllIconLines)
-						.OnGenerateRow_Raw(this, &SSlateIconBrowser::GenerateIconRow)
-						.SelectionMode(ESelectionMode::Single)
-						.Visibility_Lambda([this]
-						{
-							return Lines.IsEmpty() ? EVisibility::Collapsed : EVisibility::Visible;
-						})
+					]
+					// + SVerticalBox::Slot()
+					// .AutoHeight()
+					// [
+					// 	SNew(SBox)
+					// 	[
+					// 		SNew(SButton)
+					// 		.HAlign(HAlign_Center)
+					// 		.VAlign(VAlign_Center)
+					// 		.Text(FText::FromString("Copy Code"))
+					// 		.OnClicked(this, &SSlateIconBrowser::OnResetIcon)
+					// 		
+					// 	]
+					// ]
+					// detail text
+					+ SVerticalBox::Slot()
+					[
+						SNew(SBox)
+						.Padding(2.0f, 8.0f)
+						[
+							SAssignNew(DetailText, SMultiLineEditableText)
+							.AutoWrapText(true)
+							.AllowMultiLine(true)
+							.IsReadOnly(true)
+							.AllowContextMenu(true)
+							.Text(FText::FromString(DefaultIconDetail))
+						]
 					]
 				]
 			]
 		]
-		+SVerticalBox::Slot()
-		.VAlign(EVerticalAlignment::VAlign_Center)
-		.AutoHeight()
-		[
-			SNew(SBorder)
-			.BorderImage(FAppStyle::Get().GetBrush("Brushes.Panel"))
-			.Padding(FMargin(10, 5))
-			[
-				SAssignNew(CopyNoteTextBlock, STextBlock)
-				.Text_Lambda([&]
-				{
-					return FText::Format(LOCTEXT("CopyNote", "Double click a line to copy the {0} C++ code."),
-						GetCodeStyleText(CopyCodeStyle));
-				})
-			]
-		]
-	]
 	);
-
-
 	FillDefaultStyleSetCodes();
 	// CacheAllLines();
 }
@@ -306,17 +398,6 @@ void SSlateIconBrowser::CacheAllStyleNames()
 	// AllStyles.Sort();
 }
 
-
-void SSlateIconBrowser::UpdateStyleList()
-{
-	
-}
-
-void SSlateIconBrowser::UpdateStyleListItems()
-{
-	
-}
-
 void SSlateIconBrowser::UpdateIconListItems()
 {
 	//FindSlateStyle
@@ -324,20 +405,20 @@ void SSlateIconBrowser::UpdateIconListItems()
 	check(Style);
 	TSet<FName> keys = Style->GetStyleKeys();
 
-	Lines.Empty(keys.Num());
-	Lines.Reserve(keys.Num());
+	LinesCache.Empty(keys.Num());
+	LinesCache.Reserve(keys.Num());
 
 	for (FName key : keys) {
 		const FSlateBrush* brush = Style->GetOptionalBrush(key);
 		if (!brush || brush == FStyleDefaults::GetNoBrush())
 			continue;
-		Lines.Add(key.ToString());
+		LinesCache.Add(key.ToString());
 	}
 
-	Lines.Sort();
-	AllIconLines.Empty(Lines.Num());
+	LinesCache.Sort();
+	AllIconLines.Empty(LinesCache.Num());
 	
-	for (FString s : Lines)
+	for (FString s : LinesCache)
 		AllIconLines.Add(MakeShareable(new FName(s)));
 	
 	if (IconListView.IsValid())
@@ -345,12 +426,39 @@ void SSlateIconBrowser::UpdateIconListItems()
 		IconListView->ScrollToTop();
 }
 
-void SSlateIconBrowser::UpdateIconInfoListItems()
+
+FReply SSlateIconBrowser::OnClickIcon(const FGeometry&, const FPointerEvent&,TSharedPtr<FName> Name)
 {
-	
+
+	auto Brush = FSlateStyleRegistry::FindSlateStyle(SelectedStyle)->GetOptionalBrush(*Name);
+	FVector2D DesiredIconSize = Brush->GetImageSize();
+	if (Brush->GetImageType() == ESlateBrushImageType::NoImage)
+		DesiredIconSize = FVector2D(20);
+	SelectedIconName->SetText(FText::FromName(*Name));
+	DetailIcon->SetImage(Brush);
+	DetailText->SetText(FText::Format(
+		FText::FromString(TEXT(
+			"[{0}]: {1}\n"
+			"[Size]: {2} x {3}\n")),
+		{
+			FText::FromName(*Name),
+			FText::FromString(Brush->GetResourceName().ToString()),
+			FText::AsNumber(static_cast<int>(DesiredIconSize.X)),
+			FText::AsNumber(static_cast<int>(DesiredIconSize.Y))
+		}
+	));
+
+	return FReply::Handled();
 }
 
+FReply SSlateIconBrowser::OnResetIcon()
+{
+	SelectedIconName->SetText(DefaultIconName);
+	DetailIcon->SetImage(DefaultIcon.GetIcon());
+	DetailText->SetText(FText::FromString(DefaultIconDetail));
 
+	return FReply::Handled();
+}
 
 
 void SSlateIconBrowser::OnStyleNameFilterChanged(const FText& InFilterText)
@@ -364,10 +472,32 @@ void SSlateIconBrowser::OnStyleNameFilterChanged(const FText& InFilterText)
 	[self = SharedThis(this)](double, double)
 	{
 		self->StyleNameSearchTimer.Reset();
-		self->UpdateIconInfoListItems();
 		return EActiveTimerReturnType::Stop;
 	}));
 
+	
+	StyleFilterString = InFilterText.ToString();
+
+	AllStyles.Empty(StyleListCache.Num());
+	
+	if (StyleFilterString.IsEmpty()) {
+		for (FString s : StyleListCache)
+			AllStyles.Add(MakeShareable(new FName(s)));
+
+		if (StyleListView.IsValid())
+			StyleListView.Get()->RequestListRefresh();
+		return;
+	}
+	else
+	{
+		for (FString s : StyleListCache) {
+			if (s.Contains(StyleFilterString))
+				AllStyles.Add(MakeShareable(new FName(s)));
+
+			if (StyleListView.IsValid())
+				StyleListView.Get()->RequestListRefresh();
+		}
+	}
 	
 }
 
@@ -382,16 +512,15 @@ void SSlateIconBrowser::OnIconInfoFilterChanged(const FText& InFilterText)
 	[self = SharedThis(this)](double, double)
 	{
 		self->IconSearchTimer.Reset();
-		self->UpdateIconInfoListItems();
 		return EActiveTimerReturnType::Stop;
 	}));
 
-	FilterString = InFilterText.ToString();
+	IconFilterString = InFilterText.ToString();
 
-	AllIconLines.Empty(Lines.Num());
+	AllIconLines.Empty(LinesCache.Num());
 	
-	if (FilterString.IsEmpty()) {
-		for (FString s : Lines)
+	if (IconFilterString.IsEmpty()) {
+		for (FString s : LinesCache)
 			AllIconLines.Add(MakeShareable(new FName(s)));
 
 		if (IconListView.IsValid())
@@ -400,8 +529,8 @@ void SSlateIconBrowser::OnIconInfoFilterChanged(const FText& InFilterText)
 	}
 	else
 	{
-		for (FString s : Lines) {
-			if (s.Contains(FilterString))
+		for (FString s : LinesCache) {
+			if (s.Contains(IconFilterString))
 				AllIconLines.Add(MakeShareable(new FName(s)));
 
 			if (IconListView.IsValid())
@@ -508,8 +637,6 @@ TSharedRef<ITableRow> SSlateIconBrowser::GenerateStyleRow(TSharedPtr<FName> Item
 					OnClickStyleItem(ItemRef);
 					return FReply::Handled();
 				}))
-	
-				
 			]
 	];
 }
@@ -537,6 +664,7 @@ TSharedRef<ITableRow> SSlateIconBrowser::GenerateIconRow(TSharedPtr<FName> Name,
 			CopyIconCodeToClipboard(N, CopyCodeStyle);
 			return FReply::Handled();
 		}, *Name.Get())
+		.OnMouseButtonDown_Raw(this, &SSlateIconBrowser::OnClickIcon, Name)
 		.OnMouseButtonUp_Raw(this, &SSlateIconBrowser::EntryContextMenu, *Name.Get())
 		[
 			SNew(SHorizontalBox)
@@ -557,6 +685,10 @@ TSharedRef<ITableRow> SSlateIconBrowser::GenerateIconRow(TSharedPtr<FName> Name,
 				.Image(Brush)
 			]
 		]
+		
+
+		
+
 	];
 }
 
