@@ -438,11 +438,11 @@ FReply SSlateIconBrowser::OnClickIcon(const FGeometry&, const FPointerEvent&,TSh
 	DetailIcon->SetImage(Brush);
 	DetailText->SetText(FText::Format(
 		FText::FromString(TEXT(
-			"[{0}]: {1}\n"
+			"[Resource]: {1}\n"
 			"[Size]: {2} x {3}\n")),
 		{
 			FText::FromName(*Name),
-			FText::FromString(Brush->GetResourceName().ToString()),
+			FText::FromString(FPaths::ConvertRelativePathToFull(Brush->GetResourceName().ToString())),
 			FText::AsNumber(static_cast<int>(DesiredIconSize.X)),
 			FText::AsNumber(static_cast<int>(DesiredIconSize.Y))
 		}
