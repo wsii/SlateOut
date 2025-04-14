@@ -146,10 +146,11 @@ TSharedRef<SWidget> FSlateOutModule::GetSlateOutsDropdown() const
 {
 	FMenuBuilder MenuBuilder(true, nullptr);
 
-	// Add a button to add the current level to the bookmarks list
+	// Add a button
 	MenuBuilder.AddMenuEntry(
-		LOCTEXT("ShowStarshipSuite", "组件"),
-		LOCTEXT("ShowStarshipSuiteTooltip", "打开组件面板"),
+	LOCTEXT("ShowPrefSuite", "列表"),
+LOCTEXT("ShowPrefSuiteTooltip", "打开列表面板"),
+
 		FSlateIcon(FSlateOutStyle::GetStyleSetName(), "SlateOut.SlateOut"),
 		FUIAction(
 			FExecuteAction::CreateStatic(&ShowStarshipSuite),
@@ -162,10 +163,10 @@ TSharedRef<SWidget> FSlateOutModule::GetSlateOutsDropdown() const
 	// Add a line separator
 	MenuBuilder.AddMenuSeparator();
 
-	// Add a button to clear the level bookmarks list
+	// Add a button
 	MenuBuilder.AddMenuEntry(
-		LOCTEXT("ShowPrefSuite", "列表"),
-		LOCTEXT("ShowPrefSuiteTooltip", "打开列表面板"),
+	LOCTEXT("ShowStarshipSuite", "组件"),
+LOCTEXT("ShowStarshipSuiteTooltip", "打开组件面板"),
 		FSlateIcon(FSlateOutStyle::GetStyleSetName(), "SlateOut.SlateOut"),
 		FUIAction(
 			FExecuteAction::CreateStatic(&ShowPrefSuite),
@@ -178,7 +179,7 @@ TSharedRef<SWidget> FSlateOutModule::GetSlateOutsDropdown() const
 	// Add a line separator
 	MenuBuilder.AddMenuSeparator();
 
-	// Add a button to add the current level to the cook maps list
+	// Add a button 
 	MenuBuilder.AddMenuEntry(
 		LOCTEXT("ShowTestSuite", "测试集合"),
 		LOCTEXT("ShowTestSuiteTooltip", "打开测试集合面板"),
@@ -192,7 +193,7 @@ TSharedRef<SWidget> FSlateOutModule::GetSlateOutsDropdown() const
 	);
 
 	MenuBuilder.AddMenuSeparator();
-	// Add a button to set the current level as the game default map
+	// Add a button 
 	MenuBuilder.AddMenuEntry(
 		LOCTEXT("IconBrowserTab", "图标面板"),
 		LOCTEXT("IconBrowserTabTooltip", "打开图标面板"),
@@ -205,7 +206,7 @@ TSharedRef<SWidget> FSlateOutModule::GetSlateOutsDropdown() const
 		)
 	);
 	MenuBuilder.AddMenuSeparator();
-	// // Add a button to set the current level as the project's default map
+	// // Add a button 
 	MenuBuilder.AddMenuEntry(
 		LOCTEXT("SlateIconBrowserTab", "所有图标面板"),
 		LOCTEXT("SlateIconBrowserTabtip", "打开图标面板"),
@@ -218,7 +219,7 @@ TSharedRef<SWidget> FSlateOutModule::GetSlateOutsDropdown() const
 		)
 	);
 	MenuBuilder.AddMenuSeparator();
-	// Add a button to set the current level as the transition map
+	// Add a button 
 	MenuBuilder.AddMenuEntry(
 		LOCTEXT("ClassBrowser", "Class类合集面板"),
 		LOCTEXT("ClassBrowsertip", "打开Class类合集面板"),

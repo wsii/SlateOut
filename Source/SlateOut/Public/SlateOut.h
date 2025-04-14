@@ -41,6 +41,7 @@ private:
 	 * @return 
 	 */
 	TSharedRef<SWidget> GetSlateOutsDropdown() const;
+	
 	void RegisterGameEditorMenus();
 	
 	TSharedRef<SDockTab> OpenSlateIconBrowser(const FSpawnTabArgs& Args) const;
