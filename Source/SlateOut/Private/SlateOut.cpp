@@ -178,8 +178,7 @@ LOCTEXT("ShowPrefSuiteTooltip", "打开列表面板"),
 
 	// Add a line separator
 	MenuBuilder.AddMenuSeparator();
-
-
+	
 	// Add a button 
 	// MenuBuilder.AddMenuEntry(
 	// 	LOCTEXT("ShowTestSuite", "列表测试集合"),
@@ -207,6 +206,19 @@ LOCTEXT("ShowPrefSuiteTooltip", "打开列表面板"),
 		)
 	);
 	MenuBuilder.AddMenuSeparator();
+	// Add a button 
+	MenuBuilder.AddMenuEntry(
+		LOCTEXT("ClassBrowser", "类合集面板"),
+		LOCTEXT("ClassBrowsertip", "打开Class类合集面板"),
+		FSlateIcon(FSlateOutStyle::Get().GetStyleSetName(), TEXT("SlateOut.SlateOut")),
+		FUIAction(
+			FExecuteAction::CreateRaw(this,&FSlateOutModule::OnClassBrowser),
+			FCanExecuteAction::CreateStatic(&HasNoPlayWorld),
+			FIsActionChecked(),
+			FIsActionButtonVisible::CreateStatic(&HasNoPlayWorld)
+		)
+	);
+	MenuBuilder.AddMenuSeparator();
 	// // Add a button 
 	MenuBuilder.AddMenuEntry(
 		LOCTEXT("SlateIconBrowserTab", "所有图标面板"),
@@ -214,19 +226,6 @@ LOCTEXT("ShowPrefSuiteTooltip", "打开列表面板"),
 		FSlateIcon(FSlateOutStyle::Get().GetStyleSetName(), TEXT("SlateOut.SlateOut")),
 		FUIAction(
 			FExecuteAction::CreateRaw(this,&FSlateOutModule::OnIconBrowserClicked),
-			FCanExecuteAction::CreateStatic(&HasNoPlayWorld),
-			FIsActionChecked(),
-			FIsActionButtonVisible::CreateStatic(&HasNoPlayWorld)
-		)
-	);
-	MenuBuilder.AddMenuSeparator();
-	// Add a button 
-	MenuBuilder.AddMenuEntry(
-		LOCTEXT("ClassBrowser", "Class类合集面板"),
-		LOCTEXT("ClassBrowsertip", "打开Class类合集面板"),
-		FSlateIcon(FSlateOutStyle::Get().GetStyleSetName(), TEXT("SlateOut.SlateOut")),
-		FUIAction(
-			FExecuteAction::CreateRaw(this,&FSlateOutModule::OnClassBrowser),
 			FCanExecuteAction::CreateStatic(&HasNoPlayWorld),
 			FIsActionChecked(),
 			FIsActionButtonVisible::CreateStatic(&HasNoPlayWorld)
